@@ -1,0 +1,15 @@
+<form (ngSubmit)="submit()">
+  <label>
+    Sequence
+    <textarea name="sequence" [(ngModel)]="sequence"></textarea>
+  </label>
+  <button type="submit">Send</button>
+</form>
+
+@if (error(); as message) {
+  <p>Error: {{ message }}</p>
+}
+
+@if (result() !== null) {
+  <pre>{{ result() | json }}</pre>
+}
