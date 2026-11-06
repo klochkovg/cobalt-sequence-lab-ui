@@ -2,9 +2,6 @@
 
 # Compiled output
 /dist
-/tmp
-/out-tsc
-/bazel-out
 
 # Node
 /node_modules
@@ -31,7 +28,6 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
 .sass-cache/
 /connect.lock
 /coverage
@@ -43,3 +39,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Vite / TypeScript
+*.tsbuildinfo
+*.local
+*.timestamp-*-*.mjs
