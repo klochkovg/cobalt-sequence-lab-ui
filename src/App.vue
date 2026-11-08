@@ -3,6 +3,7 @@ import NucleotidesForm from './components/NucleotidesForm.vue';
 </script>
 
 <template>
+  <nav></nav>
   <main>
     <NucleotidesForm />
   </main>
