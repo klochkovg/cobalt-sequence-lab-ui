@@ -24,18 +24,20 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <div class="card">
+  <div>
     <form @submit.prevent="submit">
       <label>
-        Sequence
-        <textarea v-model="sequence" name="sequence"></textarea>
+        sequence
+        <textarea v-model="sequence" name="sequence" spellcheck="false"></textarea>
       </label>
-      <button type="submit">Send</button>
+      <button type="submit" class="btn btn--primary">send</button>
     </form>
 
     <p v-if="error" class="error">Error: {{ error }}</p>
 
-    <pre v-show="result !== null" class="result">{{ JSON.stringify(result, null, 2) }}</pre>
+    <pre v-show="result !== null" class="result code-block">{{
+      JSON.stringify(result, null, 2)
+    }}</pre>
   </div>
 </template>
 
