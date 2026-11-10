@@ -1,6 +1,6 @@
 // Mock implementation of the `cobalt serve` HTTP API (see ../api_description.md).
 //
-//   npm run mock                       # http://127.0.0.1:8000, CORS on, no auth
+//   npm run mock                       # http://127.0.0.1:8001, CORS on, no auth
 //   MOCK_PORT=9000 npm run mock        # another port
 //   MOCK_API_KEYS=k1,k2 npm run mock   # require X-API-Key on everything except GET /
 //   MOCK_DELAY_MS=800 npm run mock     # slow every response down (to test loading states)
@@ -317,7 +317,7 @@ export function createServer({ apiKeys = [], delayMs = 0, log = false } = {}) {
 }
 
 function main() {
-  const port = Number(process.env.MOCK_PORT ?? 8000);
+  const port = Number(process.env.MOCK_PORT ?? 8001);
   const host = process.env.MOCK_HOST ?? '127.0.0.1';
   const apiKeys = (process.env.MOCK_API_KEYS ?? '')
     .split(',')

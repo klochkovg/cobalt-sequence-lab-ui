@@ -52,3 +52,76 @@ button {
 .result {
   margin: 24px 0 0;
 }
+
+.result__empty {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+// Many records scroll sideways inside the table, never the page.
+.result__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.stats {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+
+  th,
+  td {
+    padding: 8px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  tbody tr:last-child {
+    th,
+    td {
+      border-bottom: none;
+    }
+  }
+
+  thead th {
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // Row labels: same voice as the form label, kept visible while scrolling.
+  th[scope='row'],
+  thead th:first-child {
+    position: sticky;
+    left: 0;
+    width: 1%;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: var(--surface);
+  }
+
+  td {
+    min-width: 12ch;
+    overflow-wrap: anywhere;
+  }
+}
+
+.stats__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.stats__empty {
+  color: var(--muted);
+}
