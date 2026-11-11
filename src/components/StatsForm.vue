@@ -143,4 +143,4 @@ async function submit(): Promise<void> {
   </div>
 </template>
 
-<style scoped lang="scss" src="./NucleotidesForm.scss"></style>
+<style scoped lang="scss" src="./StatsForm.scss"></style>

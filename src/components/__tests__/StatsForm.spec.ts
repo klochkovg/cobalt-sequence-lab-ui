@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import NucleotidesForm from '../NucleotidesForm.vue';
+import StatsForm from '../StatsForm.vue';
 
 function jsonResponse(status: number, body: unknown, statusText = '') {
   return {
@@ -32,13 +32,13 @@ const STATS_ROW = {
   q30_fraction: null,
 };
 
-describe('NucleotidesForm', () => {
+describe('StatsForm', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
   it('renders', () => {
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     expect(wrapper.find('textarea').exists()).toBe(true);
     expect(wrapper.find('.result').exists()).toBe(false);
   });
@@ -47,7 +47,7 @@ describe('NucleotidesForm', () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, [STATS_ROW]));
     vi.stubGlobal('fetch', fetchMock);
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('textarea').setValue('  AAC\n');
     await wrapper.find('form').trigger('submit');
     await flushPromises();
@@ -64,7 +64,7 @@ describe('NucleotidesForm', () => {
     const second = { ...STATS_ROW, id: 'other', gc_fraction: null, mean_quality: 31.25 };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, [STATS_ROW, second])));
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('textarea').setValue('AAC');
     await wrapper.find('form').trigger('submit');
     await flushPromises();
@@ -88,7 +88,7 @@ describe('NucleotidesForm', () => {
   it('says so when there are no records', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, [])));
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 
@@ -106,7 +106,7 @@ describe('NucleotidesForm', () => {
         ),
     );
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 
@@ -125,7 +125,7 @@ describe('NucleotidesForm', () => {
       ),
     );
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 
@@ -143,7 +143,7 @@ describe('NucleotidesForm', () => {
       }),
     );
 
-    const wrapper = mount(NucleotidesForm);
+    const wrapper = mount(StatsForm);
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 

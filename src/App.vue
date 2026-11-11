@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NucleotidesForm from './components/NucleotidesForm.vue';
+import StatsForm from './components/StatsForm.vue';
 </script>
 
 <template>
@@ -20,7 +20,7 @@ import NucleotidesForm from './components/NucleotidesForm.vue';
     </header>
 
     <section class="section">
-      <NucleotidesForm />
+      <StatsForm />
     </section>
   </main>
 
