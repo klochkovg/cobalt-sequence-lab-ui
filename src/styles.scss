@@ -154,6 +154,36 @@ a:hover {
   color: var(--ink);
 }
 
+/* ---------- Command menu ---------- */
+.commands {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.commands__link {
+  padding: 10px 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  text-decoration: none;
+}
+.commands__link:hover {
+  color: var(--accent);
+}
+
+.commands__link--active {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom-color: var(--accent-bright);
+}
+
 /* ---------- Character ---------- */
 .character {
   position: relative;
