@@ -89,7 +89,7 @@ async function submit(): Promise<void> {
     // The API takes multipart/form-data. Don't set Content-Type: the browser adds the boundary.
     const form = new FormData();
     form.append('sequence', sequence.value.trim());
-    const response = await fetch('/stats', { method: 'POST', body: form });
+    const response = await fetch('/api/stats', { method: 'POST', body: form });
     if (!response.ok) {
       throw new Error(await errorMessage(response));
     }

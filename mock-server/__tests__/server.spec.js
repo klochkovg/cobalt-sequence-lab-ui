@@ -10,7 +10,9 @@ async function startServer(options) {
   const server = createServer(options);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
-  return { server, baseUrl: `http://127.0.0.1:${port}` };
+  const origin = `http://127.0.0.1:${port}`;
+  // Every endpoint lives under /api, so tests use paths relative to it.
+  return { server, origin, baseUrl: `${origin}/api` };
 }
 
 function form(fields) {
@@ -29,12 +31,13 @@ const file = (name, content) => ['file', { name, content }];
 
 describe('mock server (no auth)', () => {
   let server;
+  let origin;
   let baseUrl;
   const post = (path, fields, init = {}) =>
     fetch(baseUrl + path, { method: 'POST', body: form(fields), ...init });
 
   beforeAll(async () => {
-    ({ server, baseUrl } = await startServer());
+    ({ server, origin, baseUrl } = await startServer());
   });
   afterAll(() => new Promise((resolve) => server.close(resolve)));
 
@@ -58,8 +61,10 @@ describe('mock server (no auth)', () => {
     expect(res.headers.get('access-control-allow-headers')).toBe('x-api-key');
   });
 
-  it('returns 404 for unknown routes and 405 for wrong methods', async () => {
+  it('returns 404 for unknown or unprefixed routes and 405 for wrong methods', async () => {
     expect((await fetch(baseUrl + '/nope')).status).toBe(404);
+    expect((await fetch(origin + '/')).status).toBe(404);
+    expect((await fetch(origin + '/stats', { method: 'POST' })).status).toBe(404);
     expect((await fetch(baseUrl + '/inspect')).status).toBe(405);
   });
 
@@ -321,7 +326,7 @@ describe('mock server (api-key auth)', () => {
   });
   afterAll(() => new Promise((resolve) => server.close(resolve)));
 
-  it('keeps GET / public', async () => {
+  it('keeps GET /api public', async () => {
     expect((await fetch(baseUrl + '/')).status).toBe(200);
   });
 

@@ -43,7 +43,7 @@ describe('StatsForm', () => {
     expect(wrapper.find('.result').exists()).toBe(false);
   });
 
-  it('POSTs the sequence to /stats as form data', async () => {
+  it('POSTs the sequence to /api/stats as form data', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, [STATS_ROW]));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -53,7 +53,7 @@ describe('StatsForm', () => {
     await flushPromises();
 
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe('/stats');
+    expect(url).toBe('/api/stats');
     expect(init.method).toBe('POST');
     expect(init.headers).toBeUndefined();
     expect(init.body).toBeInstanceOf(FormData);

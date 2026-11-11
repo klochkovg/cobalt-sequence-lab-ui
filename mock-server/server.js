@@ -1,8 +1,9 @@
-// Mock implementation of the `cobalt serve` HTTP API (see ../api_description.md).
+// Mock implementation of the `cobalt serve` HTTP API (see ../api_description.md), served under
+// /api (`POST /api/stats`, `GET /api` for the version). The real server has no prefix.
 //
 //   npm run mock                       # http://127.0.0.1:8001, CORS on, no auth
 //   MOCK_PORT=9000 npm run mock        # another port
-//   MOCK_API_KEYS=k1,k2 npm run mock   # require X-API-Key on everything except GET /
+//   MOCK_API_KEYS=k1,k2 npm run mock   # require X-API-Key on everything except GET /api
 //   MOCK_DELAY_MS=800 npm run mock     # slow every response down (to test loading states)
 import http from 'node:http';
 import { Readable } from 'node:stream';
@@ -206,7 +207,10 @@ async function handleNormalize(form) {
 const notImplemented = (command) => async () =>
   detail(501, `cobalt ${command} is not implemented yet`);
 
-/** Route table: [method, pattern, handler, { public, form }] */
+/** All endpoints are served under this prefix, e.g. `POST /api/stats`. */
+export const API_PREFIX = '/api';
+
+/** Route table, paths relative to API_PREFIX: [method, pattern, handler, { public, form }] */
 const ROUTES = [
   ['GET', /^\/$/, async () => json(200, { title: TITLE, version: VERSION }), { public: true }],
   ['POST', /^\/inspect$/, handleInspect, { form: true }],
@@ -259,7 +263,11 @@ async function dispatch(req, { apiKeys }) {
 
   if (req.method === 'OPTIONS') return new HttpResponse(204);
 
-  const matching = ROUTES.filter(([, pattern]) => pattern.test(path));
+  // Everything lives under API_PREFIX; the route table holds the paths after it.
+  if (path !== API_PREFIX && !path.startsWith(API_PREFIX + '/')) return detail(404, 'Not Found');
+  const routePath = path.slice(API_PREFIX.length) || '/';
+
+  const matching = ROUTES.filter(([, pattern]) => pattern.test(routePath));
   if (matching.length === 0) return detail(404, 'Not Found');
   const route = matching.find(([method]) => method === req.method);
   if (!route) return detail(405, 'Method Not Allowed');
