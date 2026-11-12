@@ -41,7 +41,7 @@ interface InspectReport {
 
 type RecordField = Exclude<keyof InspectRecord, 'id' | 'sequence'>;
 
-// Record table rows in the API's field order; `id` is the column header, `sequence` the last row.
+// Record table columns in the API's field order; `id` is the row header, `sequence` the last column.
 const RECORD_FIELDS: { key: RecordField; label: string; kind: Kind }[] = [
   { key: 'length', label: 'length', kind: 'int' },
   { key: 'gc_fraction', label: 'gc content', kind: 'percent' },
@@ -185,18 +185,19 @@ async function submit(): Promise<void> {
           <table class="stats records">
             <thead>
               <tr>
-                <th scope="col">record</th>
-                <th v-for="(record, index) in result.records" :key="index" scope="col">
-                  {{ record.id }}
+                <th scope="col">id</th>
+                <th v-for="field in RECORD_FIELDS" :key="field.key" scope="col">
+                  {{ field.label }}
                 </th>
+                <th scope="col">sequence</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="field in RECORD_FIELDS" :key="field.key">
-                <th scope="row">{{ field.label }}</th>
+              <tr v-for="(record, index) in result.records" :key="index">
+                <th scope="row">{{ record.id }}</th>
                 <td
-                  v-for="(record, index) in result.records"
-                  :key="index"
+                  v-for="field in RECORD_FIELDS"
+                  :key="field.key"
                   :class="{
                     stats__num: field.kind !== 'text',
                     stats__empty: record[field.key] === null || record[field.key] === '',
@@ -204,12 +205,7 @@ async function submit(): Promise<void> {
                 >
                   {{ formatValue(record[field.key], field.kind) }}
                 </td>
-              </tr>
-              <tr>
-                <th scope="row">sequence</th>
                 <td
-                  v-for="(record, index) in result.records"
-                  :key="index"
                   class="stats__seq"
                   :class="{ stats__empty: !record.sequence }"
                   :title="record.sequence ?? undefined"

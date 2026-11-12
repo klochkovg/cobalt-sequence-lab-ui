@@ -169,21 +169,46 @@ describe('InspectForm', () => {
     ]);
   });
 
-  it('shows the records as a table with one column per record', async () => {
+  it('shows the records as a table with one row per record', async () => {
     const { wrapper } = await submitWith(REPORT);
 
     const headers = wrapper.findAll('table.records thead th').map((th) => th.text());
-    expect(headers).toEqual(['record', 'read1', 'read1']);
-    expect(row(wrapper, 'table.records', 'length')).toEqual(['10', '80']);
-    expect(row(wrapper, 'table.records', 'gc content')).toEqual(['50.0%', '50.0%']);
-    expect(row(wrapper, 'table.records', 'description')).toEqual(['high quality', '—']);
-    expect(row(wrapper, 'table.records', 'mean quality')).toEqual(['40.0', '12.3']);
-    expect(row(wrapper, 'table.records', 'q30')).toEqual(['100.0%', '25.0%']);
+    expect(headers).toEqual([
+      'id',
+      'length',
+      'gc content',
+      'type',
+      'molecule type',
+      'description',
+      'organism',
+      'mean quality',
+      'min quality',
+      'q30',
+      'sequence',
+    ]);
 
-    const sequences = wrapper.findAll('table.records td.stats__seq');
-    expect(sequences[0]!.text()).toBe('ACGTACGTAC');
-    expect(sequences[1]!.text()).toBe(`${LONG_SEQUENCE.slice(0, 60)}…`);
-    expect(sequences[1]!.attributes('title')).toBe(LONG_SEQUENCE);
+    const rows = wrapper.findAll('table.records tbody tr');
+    expect(rows).toHaveLength(2);
+    const cells = (index: number) => rows[index]!.findAll('th, td').map((cell) => cell.text());
+    expect(cells(0)).toEqual([
+      'read1',
+      '10',
+      '50.0%',
+      'DNA',
+      '—',
+      'high quality',
+      '—',
+      '40.0',
+      '40',
+      '100.0%',
+      'ACGTACGTAC',
+    ]);
+    expect(cells(1).slice(0, 2)).toEqual(['read1', '80']);
+    expect(cells(1)[7]).toBe('12.3');
+
+    const longSequence = rows[1]!.find('td.stats__seq');
+    expect(longSequence.text()).toBe(`${LONG_SEQUENCE.slice(0, 60)}…`);
+    expect(longSequence.attributes('title')).toBe(LONG_SEQUENCE);
   });
 
   it('says so when there are no records', async () => {

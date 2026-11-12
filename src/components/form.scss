@@ -228,7 +228,16 @@ button {
 }
 
 // Sequence previews: break anywhere, never stretch the column.
+// Records table: one record per row. Numbers stay on one line, text and sequences wrap.
+.records td {
+  min-width: 0;
+}
+
+.records .stats__num {
+  white-space: nowrap;
+}
+
 .stats__seq {
   word-break: break-all;
-  min-width: 24ch;
+  min-width: 30ch;
 }
