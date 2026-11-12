@@ -37,9 +37,76 @@ textarea {
   }
 }
 
+input[type='file'],
+input[type='number'] {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: normal;
+  text-transform: none;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+  }
+
+  &:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+}
+
+input[type='number'] {
+  max-width: 14ch;
+}
+
+input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+// A row of compact options under the main input.
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 28px;
+}
+
+// Checkbox and its text on one line.
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  cursor: pointer;
+
+  input {
+    margin: 0;
+    accent-color: var(--accent);
+  }
+}
+
 button {
   align-self: flex-start;
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 .error {
@@ -124,4 +191,44 @@ button {
 
 .stats__empty {
   color: var(--muted);
+}
+
+// Result sub-headings (overview, warnings, records).
+.result__label {
+  margin: 28px 0 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: var(--accent);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// Two-column key/value table; reuses the .stats look, values wrap freely.
+.overview td {
+  min-width: 0;
+}
+
+.warnings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--danger);
+}
+
+.warnings__id {
+  color: var(--ink);
+}
+
+// Sequence previews: break anywhere, never stretch the column.
+.stats__seq {
+  word-break: break-all;
+  min-width: 24ch;
 }

@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createMemoryHistory } from 'vue-router';
 import App from '../App.vue';
 import StatsForm from '../components/StatsForm.vue';
+import InspectForm from '../components/InspectForm.vue';
 import { createAppRouter } from '../router';
 
 async function mountAt(path: string) {
@@ -43,14 +44,20 @@ describe('App routing', () => {
     expect(active()).toEqual(['stats']);
     expect(wrapper.find('.commands__link--active').text()).toBe('stats');
 
-    await wrapper.find('nav.commands a[href="/inspect"]').trigger('click');
+    await wrapper.find('nav.commands a[href="/normalize"]').trigger('click');
     await router.isReady();
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(router.currentRoute.value.path).toBe('/inspect');
-    expect(active()).toEqual(['inspect']);
-    expect(wrapper.find('h1').text()).toBe('inspect');
+    expect(router.currentRoute.value.path).toBe('/normalize');
+    expect(active()).toEqual(['normalize']);
+    expect(wrapper.find('h1').text()).toBe('normalize');
     expect(wrapper.text()).toContain('not available in the UI yet');
+    expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
+  });
+
+  it('shows the inspect form on /inspect', async () => {
+    const { wrapper } = await mountAt('/inspect');
+    expect(wrapper.findComponent(InspectForm).exists()).toBe(true);
     expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
   });
 });
