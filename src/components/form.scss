@@ -38,7 +38,8 @@ textarea {
 }
 
 input[type='file'],
-input[type='number'] {
+input[type='number'],
+select {
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -61,8 +62,13 @@ input[type='number'] {
   }
 }
 
-input[type='number'] {
+input[type='number'],
+select {
   max-width: 14ch;
+}
+
+select {
+  cursor: pointer;
 }
 
 input[type='file']::file-selector-button {
@@ -240,4 +246,39 @@ button {
 .stats__seq {
   word-break: break-all;
   min-width: 30ch;
+}
+
+// Normalize: download link and file name above the output preview.
+.result__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+// File text preview: scrolls inside the box, never the page.
+.output {
+  margin: 0;
+  max-height: 480px;
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.output__more {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
 }

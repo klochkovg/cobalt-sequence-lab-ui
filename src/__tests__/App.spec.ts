@@ -4,6 +4,7 @@ import { createMemoryHistory } from 'vue-router';
 import App from '../App.vue';
 import StatsForm from '../components/StatsForm.vue';
 import InspectForm from '../components/InspectForm.vue';
+import NormalizeForm from '../components/NormalizeForm.vue';
 import { createAppRouter } from '../router';
 
 async function mountAt(path: string) {
@@ -44,13 +45,13 @@ describe('App routing', () => {
     expect(active()).toEqual(['stats']);
     expect(wrapper.find('.commands__link--active').text()).toBe('stats');
 
-    await wrapper.find('nav.commands a[href="/normalize"]').trigger('click');
+    await wrapper.find('nav.commands a[href="/validate"]').trigger('click');
     await router.isReady();
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(router.currentRoute.value.path).toBe('/normalize');
-    expect(active()).toEqual(['normalize']);
-    expect(wrapper.find('h1').text()).toBe('normalize');
+    expect(router.currentRoute.value.path).toBe('/validate');
+    expect(active()).toEqual(['validate']);
+    expect(wrapper.find('h1').text()).toBe('validate');
     expect(wrapper.text()).toContain('not available in the UI yet');
     expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
   });
@@ -58,6 +59,12 @@ describe('App routing', () => {
   it('shows the inspect form on /inspect', async () => {
     const { wrapper } = await mountAt('/inspect');
     expect(wrapper.findComponent(InspectForm).exists()).toBe(true);
+    expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
+  });
+
+  it('shows the normalize form on /normalize', async () => {
+    const { wrapper } = await mountAt('/normalize');
+    expect(wrapper.findComponent(NormalizeForm).exists()).toBe(true);
     expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
   });
 });

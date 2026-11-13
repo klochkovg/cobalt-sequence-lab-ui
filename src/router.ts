@@ -7,6 +7,7 @@ import {
 import type { Component } from 'vue';
 import StatsView from './views/StatsView.vue';
 import InspectView from './views/InspectView.vue';
+import NormalizeView from './views/NormalizeView.vue';
 import CommandPlaceholderView from './views/CommandPlaceholderView.vue';
 
 /** API commands with a page each, in menu order. Page paths never start with /api. */
@@ -16,6 +17,7 @@ export const COMMANDS = ['stats', 'inspect', 'normalize', 'validate'] as const;
 const PAGES: Partial<Record<(typeof COMMANDS)[number], Component>> = {
   stats: StatsView,
   inspect: InspectView,
+  normalize: NormalizeView,
 };
 
 export const routes: RouteRecordRaw[] = [

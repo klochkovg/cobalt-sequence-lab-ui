@@ -37,14 +37,24 @@ export async function errorMessage(response: Response): Promise<string> {
 }
 
 /**
- * POST multipart form data to an API endpoint (e.g. `/stats`) and return the JSON body.
+ * POST multipart form data to an API endpoint (e.g. `/stats`).
  * Throws an Error with a user-facing message when the response is not OK.
  */
-export async function postForm<T>(path: string, form: FormData): Promise<T> {
+async function post(path: string, form: FormData): Promise<Response> {
   // Don't set Content-Type: the browser adds the multipart boundary.
   const response = await fetch(`/api${path}`, { method: 'POST', body: form });
   if (!response.ok) {
     throw new Error(await errorMessage(response));
   }
-  return (await response.json()) as T;
+  return response;
+}
+
+/** POST form data and return the JSON body (see `post` for errors). */
+export async function postForm<T>(path: string, form: FormData): Promise<T> {
+  return (await (await post(path, form)).json()) as T;
+}
+
+/** POST form data and return the plain-text body, e.g. `/normalize` (see `post` for errors). */
+export async function postFormText(path: string, form: FormData): Promise<string> {
+  return (await post(path, form)).text();
 }
