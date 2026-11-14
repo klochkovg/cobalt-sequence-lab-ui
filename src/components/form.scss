@@ -282,3 +282,21 @@ button {
   font-size: 13px;
   color: var(--muted);
 }
+
+// Validate: QC verdict above the overview.
+.verdict {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.verdict--passed {
+  color: var(--success);
+}
+
+.verdict--failed {
+  color: var(--danger);
+}

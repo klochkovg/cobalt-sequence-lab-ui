@@ -5,6 +5,7 @@ import App from '../App.vue';
 import StatsForm from '../components/StatsForm.vue';
 import InspectForm from '../components/InspectForm.vue';
 import NormalizeForm from '../components/NormalizeForm.vue';
+import ValidateForm from '../components/ValidateForm.vue';
 import { createAppRouter } from '../router';
 
 async function mountAt(path: string) {
@@ -51,8 +52,8 @@ describe('App routing', () => {
 
     expect(router.currentRoute.value.path).toBe('/validate');
     expect(active()).toEqual(['validate']);
-    expect(wrapper.find('h1').text()).toBe('validate');
-    expect(wrapper.text()).toContain('not available in the UI yet');
+    expect(wrapper.find('h1').text()).toBe('Validate');
+    expect(wrapper.findComponent(ValidateForm).exists()).toBe(true);
     expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
   });
 
@@ -65,6 +66,12 @@ describe('App routing', () => {
   it('shows the normalize form on /normalize', async () => {
     const { wrapper } = await mountAt('/normalize');
     expect(wrapper.findComponent(NormalizeForm).exists()).toBe(true);
+    expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
+  });
+
+  it('shows the validate form on /validate', async () => {
+    const { wrapper } = await mountAt('/validate');
+    expect(wrapper.findComponent(ValidateForm).exists()).toBe(true);
     expect(wrapper.findComponent(StatsForm).exists()).toBe(false);
   });
 });
