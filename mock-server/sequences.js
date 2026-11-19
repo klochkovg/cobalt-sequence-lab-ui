@@ -12,7 +12,6 @@ export const WARNING_KINDS = [
 const WARNING_MESSAGES = {
   duplicate_id: 'duplicate ID',
   empty_sequence: 'empty sequence',
-  invalid_characters: 'invalid characters',
   undefined_sequence: 'undefined sequence',
 };
 
@@ -21,8 +20,13 @@ export const UNRECOGNIZED_FORMAT_MESSAGE =
   "FASTQ (starts with '@'), PDB (starts with a record name like 'HEADER' or 'ATOM') " +
   "or mmCIF (starts with 'data_')";
 
-/** Error whose message is shown to the user as a 422 string `detail`. */
-export class CobaltError extends Error {}
+/** Error whose message is shown to the user as a string `detail` (422 unless `status` says otherwise). */
+export class CobaltError extends Error {
+  constructor(message, status = 422) {
+    super(message);
+    this.status = status;
+  }
+}
 
 const PDB_RECORD_NAMES = [
   'HEADER',
@@ -94,15 +98,24 @@ const THREE_TO_ONE = {
  * Decompress (if needed) and decode an uploaded file.
  * @param {Uint8Array} bytes
  * @param {string} fileName
+ * @param {{ maxDecompressedBytes?: number | null }} [options] cap on the decompressed size (413 above it)
  * @returns {{ text: string, compression: 'gzip' | 'bzip2' | null }}
  */
-export function decodeUpload(bytes, fileName) {
+export function decodeUpload(bytes, fileName, { maxDecompressedBytes = null } = {}) {
   if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) {
+    let inflated;
     try {
-      return { text: new TextDecoder().decode(gunzipSync(bytes)), compression: 'gzip' };
+      inflated = gunzipSync(
+        bytes,
+        maxDecompressedBytes ? { maxOutputLength: maxDecompressedBytes } : {},
+      );
     } catch (err) {
+      if (err.code === 'ERR_BUFFER_TOO_LARGE') {
+        throw new CobaltError(`${fileName}: decompressed size exceeds the limit`, 413);
+      }
       throw new CobaltError(`${fileName}: could not decompress gzip: ${err.message}`);
     }
+    return { text: new TextDecoder().decode(inflated), compression: 'gzip' };
   }
   if (bytes.length >= 3 && bytes[0] === 0x42 && bytes[1] === 0x5a && bytes[2] === 0x68) {
     throw new CobaltError(`${fileName}: bzip2 input is not supported by the mock server`);
@@ -361,8 +374,8 @@ const PARSERS = {
  * @param {Uint8Array} bytes
  * @param {string} fileName
  */
-export function readFile(bytes, fileName) {
-  const { text, compression } = decodeUpload(bytes, fileName);
+export function readFile(bytes, fileName, options = {}) {
+  const { text, compression } = decodeUpload(bytes, fileName, options);
   const format = detectFormat(text);
   if (format === undefined) throw new CobaltError(`${fileName}: ${UNRECOGNIZED_FORMAT_MESSAGE}`);
   if (format === null) return { file: fileName, format: null, compression, records: [] };
@@ -450,6 +463,34 @@ export function composition(sequence, type) {
   };
 }
 
+/**
+ * The invalid characters of a sequence for its molecule type, or null when there are none
+ * (or the type has no alphabet): distinct upper-cased characters (sorted), their total count,
+ * and the 1-based positions of the first 10.
+ */
+export function invalidCharacters(sequence, type) {
+  const alphabet = alphabetFor(type);
+  if (sequence === null || !alphabet) return null;
+  const characters = new Set();
+  const positions = [];
+  let count = 0;
+  [...sequence].forEach((char, index) => {
+    const c = char.toUpperCase();
+    if (alphabet.strict.has(c) || alphabet.ambiguous.has(c)) return;
+    characters.add(c);
+    count += 1;
+    if (positions.length < 10) positions.push(index + 1);
+  });
+  if (count === 0) return null;
+  return { characters: [...characters].sort(), count, first_positions: positions };
+}
+
+/** Python's repr() of a list of one-character strings, e.g. `['*', 'J']`. */
+function pythonCharList(chars) {
+  const repr = (c) => (c === "'" ? `"'"` : c === '\\' ? "'\\\\'" : `'${c}'`);
+  return `[${chars.map(repr).join(', ')}]`;
+}
+
 /** Phred quality summary; all null when there are no qualities. */
 export function qualityStats(qualities) {
   if (!qualities) return { mean_quality: null, min_quality: null, q30_fraction: null };
@@ -481,15 +522,23 @@ export function collectWarnings(records) {
   const seen = new Set();
   for (const raw of records) {
     const add = (kind) =>
-      warnings.push({ record_id: raw.id, kind, message: WARNING_MESSAGES[kind] });
+      warnings.push({ record_id: raw.id, kind, message: WARNING_MESSAGES[kind], details: null });
     if (seen.has(raw.id)) add('duplicate_id');
     seen.add(raw.id);
     if (raw.sequence === null) {
       add('undefined_sequence');
     } else if (raw.length === 0) {
       add('empty_sequence');
-    } else if (analyzeRecord(raw).invalid_char_count > 0) {
-      add('invalid_characters');
+    } else {
+      const details = invalidCharacters(raw.sequence, analyzeRecord(raw).type);
+      if (details) {
+        warnings.push({
+          record_id: raw.id,
+          kind: 'invalid_characters',
+          message: `invalid characters ${pythonCharList(details.characters)}`,
+          details,
+        });
+      }
     }
   }
   return warnings;
@@ -505,12 +554,12 @@ export function countWarnings(warnings) {
 // Report builders
 // ---------------------------------------------------------------------------
 
-export function inspectRecord(raw) {
+export function inspectRecord(raw, { includeSequence = true } = {}) {
   const a = analyzeRecord(raw);
   return {
     id: raw.id,
     length: raw.length,
-    sequence: raw.sequence,
+    sequence: includeSequence ? raw.sequence : null,
     gc_fraction: a.gc_fraction,
     type: a.type,
     molecule_type: raw.molecule_type,
@@ -522,7 +571,27 @@ export function inspectRecord(raw) {
   };
 }
 
-export function buildInspectReport(parsed, { overviewOnly = false, limit = null } = {}) {
+/** Keep at most `max` warnings (all when `max` is null). */
+function limitWarnings(warnings, max) {
+  const truncated = max !== null && warnings.length > max;
+  return { warnings: truncated ? warnings.slice(0, max) : warnings, truncated };
+}
+
+/**
+ * @param {object} parsed result of readFile
+ * @param {{ overviewOnly?: boolean, limit?: number | null, offset?: number,
+ *           includeSequence?: boolean, maxWarnings?: number | null }} [options]
+ */
+export function buildInspectReport(
+  parsed,
+  {
+    overviewOnly = false,
+    limit = null,
+    offset = 0,
+    includeSequence = true,
+    maxWarnings = null,
+  } = {},
+) {
   const { records } = parsed;
   const lengths = records.map((r) => r.length);
   const typeCounts = {};
@@ -530,8 +599,10 @@ export function buildInspectReport(parsed, { overviewOnly = false, limit = null 
     const { type } = analyzeRecord(raw);
     typeCounts[type] = (typeCounts[type] ?? 0) + 1;
   }
-  const warnings = collectWarnings(records);
-  const listed = overviewOnly ? [] : limit === null ? records : records.slice(0, limit);
+  const allWarnings = collectWarnings(records);
+  const { warnings, truncated } = limitWarnings(allWarnings, maxWarnings);
+  const end = limit === null ? undefined : offset + limit;
+  const listed = overviewOnly ? [] : records.slice(offset, end);
   return {
     file: parsed.file,
     records_num: records.length,
@@ -541,22 +612,27 @@ export function buildInspectReport(parsed, { overviewOnly = false, limit = null 
     max_length: lengths.length ? Math.max(...lengths) : null,
     mean_length: lengths.length ? lengths.reduce((a, b) => a + b, 0) / lengths.length : null,
     molecule_types: Object.fromEntries(Object.entries(typeCounts).sort((a, b) => b[1] - a[1])),
-    warning_counts: countWarnings(warnings),
+    warning_counts: countWarnings(allWarnings),
     warnings,
-    records: listed.map(inspectRecord),
+    records: listed.map((raw) => inspectRecord(raw, { includeSequence })),
+    records_offset: offset,
+    warnings_truncated: truncated,
   };
 }
 
-export function buildQcReport(parsed) {
-  const warnings = collectWarnings(parsed.records);
+/** @param {{ maxWarnings?: number | null }} [options] */
+export function buildQcReport(parsed, { maxWarnings = null } = {}) {
+  const allWarnings = collectWarnings(parsed.records);
+  const { warnings, truncated } = limitWarnings(allWarnings, maxWarnings);
   return {
     file: parsed.file,
     records_num: parsed.records.length,
     format: parsed.format,
     compression: parsed.compression,
-    passed: warnings.length === 0,
-    warning_counts: countWarnings(warnings),
+    passed: allWarnings.length === 0,
+    warning_counts: countWarnings(allWarnings),
     warnings,
+    warnings_truncated: truncated,
   };
 }
 
@@ -625,24 +701,26 @@ function header(raw) {
 
 export const OUTPUT_FORMATS = ['fasta', 'genbank', 'fastq'];
 
+export const OUTPUT_EXTENSIONS = { fasta: '.fasta', genbank: '.gbk', fastq: '.fastq' };
+
 /**
- * Write normalized records in the requested format.
- * @throws {CobaltError} when a record cannot be written
+ * Write normalized records in the requested format. Records the format can't hold (no sequence
+ * content, or no qualities for FASTQ) are skipped and counted.
+ * @returns {{ text: string, read: number, written: number, skipped: number }}
  */
 export function writeRecords(parsed, format) {
-  const fail = (reason) => {
-    throw new CobaltError(`${parsed.file}: could not write ${format}: ${reason}`);
-  };
   let out = '';
+  let written = 0;
   for (const raw of parsed.records) {
-    if (raw.sequence === null) fail(`record ${raw.id} has an undefined sequence`);
+    if (raw.sequence === null) continue;
+    if (format === 'fastq' && !raw.qualities) continue;
+    written += 1;
     const seq = raw.sequence.toUpperCase();
     if (format === 'fasta') {
       out += `>${header(raw)}\n${wrap(seq, 60)
         .map((l) => l + '\n')
         .join('')}`;
     } else if (format === 'fastq') {
-      if (!raw.qualities) continue;
       const qual = raw.qualities.map((q) => String.fromCharCode(Math.min(q, 93) + 33)).join('');
       out += `@${header(raw)}\n${seq}\n+\n${qual}\n`;
     } else {
@@ -668,5 +746,18 @@ export function writeRecords(parsed, format) {
       out += '//\n';
     }
   }
-  return out;
+  const read = parsed.records.length;
+  return { text: out, read, written, skipped: read - written };
+}
+
+/**
+ * Suggested download name for a normalized file: the upload's base name without `.gz`/`.bz2`
+ * and its extension, plus the output format's extension.
+ */
+export function normalizedFileName(uploadName, format) {
+  let base = (uploadName || 'upload').split(/[/\\]/).pop() || 'upload';
+  base = base.replace(/\.(gz|bz2)$/i, '');
+  const dot = base.lastIndexOf('.');
+  if (dot > 0) base = base.slice(0, dot);
+  return base + OUTPUT_EXTENSIONS[format];
 }
