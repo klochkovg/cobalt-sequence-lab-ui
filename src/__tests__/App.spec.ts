@@ -30,6 +30,16 @@ describe('App routing', () => {
     ]);
   });
 
+  it('puts the modes list in a side column and the page in main', async () => {
+    const { wrapper } = await mountAt('/inspect');
+    const sidebar = wrapper.find('aside.sidebar');
+
+    expect(sidebar.find('nav.commands').exists()).toBe(true);
+    expect(sidebar.find('.commands__label').text()).toBe('// modes');
+    expect(wrapper.find('main').findComponent(InspectForm).exists()).toBe(true);
+    expect(wrapper.find('main nav.commands').exists()).toBe(false);
+  });
+
   it('redirects / and unknown paths to /stats', async () => {
     for (const path of ['/', '/nope/deeper']) {
       const { router, wrapper } = await mountAt(path);

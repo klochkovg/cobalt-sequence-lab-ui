@@ -57,6 +57,9 @@
   /* App layout: the content fills the window, from a minimum up to a cap for very wide screens. */
   --content-width: 2000px;
   --content-min-width: 360px;
+  /* Height of the sticky top bar: the modes list sticks just below it. */
+  --nav-height: 50px;
+  --sidebar-width: 190px;
 }
 
 /* ---------- Base ---------- */
@@ -159,23 +162,48 @@ a:hover {
   color: var(--ink);
 }
 
-/* ---------- Command menu ---------- */
+/* ---------- Layout: modes "frame" on the left, page on the right ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+/* Stretches the whole layout height, so the divider runs from the top bar to the footer. */
+.sidebar {
+  border-right: 1px solid var(--line);
+}
+
+.layout__content {
+  min-width: 0;
+  padding-left: 40px;
+}
+
+/* ---------- Command menu (modes list) ---------- */
 .commands {
+  position: sticky;
+  top: var(--nav-height);
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  margin-top: 28px;
-  border-bottom: 1px solid var(--line);
+  flex-direction: column;
+  padding: 28px 0;
   font-family: var(--font-mono);
   font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: lowercase;
 }
 
+.commands__label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
 .commands__link {
-  padding: 10px 0;
-  margin-bottom: -1px;
-  border-bottom: 2px solid transparent;
+  display: block;
+  padding: 6px 18px 6px 0;
+  /* The active marker sits on the divider, like the old tab underline sat on the rule. */
+  margin-right: -1px;
+  border-right: 2px solid transparent;
   color: var(--muted);
   text-decoration: none;
 }
@@ -186,7 +214,48 @@ a:hover {
 .commands__link--active {
   color: var(--accent);
   font-weight: 600;
-  border-bottom-color: var(--accent-bright);
+  border-right-color: var(--accent-bright);
+}
+
+/* Narrow windows: a side column would squeeze the forms, so fall back to a row of tabs. */
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    border-right: none;
+  }
+
+  .layout__content {
+    padding-left: 0;
+  }
+
+  .commands {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 28px;
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .commands__label {
+    display: none;
+  }
+
+  .commands__link {
+    padding: 10px 0;
+    margin-right: 0;
+    margin-bottom: -1px;
+    border-right: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .commands__link--active {
+    border-bottom-color: var(--accent-bright);
+  }
 }
 
 /* ---------- Character ---------- */
