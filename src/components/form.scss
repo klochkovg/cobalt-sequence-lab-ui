@@ -323,3 +323,19 @@ button {
 .status--cancelled {
   color: var(--muted);
 }
+
+// Runs list and a run's tasks: id, status and times stay on one line (the table scrolls sideways instead).
+.runs .runs__id {
+  min-width: 26ch; // `YYYYMMDD-HHMMSS-<8 hex>` is 24 characters
+  white-space: nowrap;
+}
+
+.runs .runs__status {
+  min-width: 11ch; // longest: succeeded, cancelled
+  white-space: nowrap;
+}
+
+.runs .runs__time {
+  min-width: 21ch; // `YYYY-MM-DD HH:MM:SS`
+  white-space: nowrap;
+}

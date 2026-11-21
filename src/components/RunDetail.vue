@@ -88,7 +88,7 @@ const params = computed(() => Object.entries(run.value?.params ?? {}));
       <h2 class="result__label">tasks</h2>
       <p v-if="run.tasks.length === 0" class="result__empty">no tasks</p>
       <div v-else class="result__scroll">
-        <table class="stats records tasks">
+        <table class="stats records tasks runs">
           <thead>
             <tr>
               <th scope="col">name</th>
@@ -107,11 +107,11 @@ const params = computed(() => Object.entries(run.value?.params ?? {}));
               <td :class="{ stats__empty: task.depends_on.length === 0 }">
                 {{ task.depends_on.length > 0 ? task.depends_on.join(', ') : EMPTY }}
               </td>
-              <td>
+              <td class="runs__status">
                 <span class="status" :class="`status--${task.status}`">{{ task.status }}</span>
               </td>
-              <td class="stats__num">{{ formatTime(task.started_at) }}</td>
-              <td class="stats__num">{{ formatTime(task.finished_at) }}</td>
+              <td class="stats__num runs__time">{{ formatTime(task.started_at) }}</td>
+              <td class="stats__num runs__time">{{ formatTime(task.finished_at) }}</td>
               <td :class="{ stats__empty: task.error === null }">{{ task.error ?? EMPTY }}</td>
             </tr>
           </tbody>

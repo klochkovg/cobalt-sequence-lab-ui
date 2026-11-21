@@ -40,7 +40,7 @@ onMounted(load);
     <div v-if="runs !== null" class="result">
       <p v-if="runs.length === 0" class="result__empty">no runs yet</p>
       <div v-else class="result__scroll">
-        <table class="stats records">
+        <table class="stats records runs">
           <thead>
             <tr>
               <th scope="col">run id</th>
@@ -54,18 +54,18 @@ onMounted(load);
           </thead>
           <tbody>
             <tr v-for="run in runs" :key="run.run_id">
-              <td>
+              <td class="runs__id">
                 <RouterLink :to="runPath(run.run_id)" class="link--underline">{{
                   run.run_id
                 }}</RouterLink>
               </td>
               <td>{{ run.pipeline.name }} {{ run.pipeline.version }}</td>
-              <td>
+              <td class="runs__status">
                 <span class="status" :class="`status--${run.status}`">{{ run.status }}</span>
               </td>
-              <td class="stats__num">{{ formatTime(run.created_at) }}</td>
-              <td class="stats__num">{{ formatTime(run.started_at) }}</td>
-              <td class="stats__num">{{ formatTime(run.finished_at) }}</td>
+              <td class="stats__num runs__time">{{ formatTime(run.created_at) }}</td>
+              <td class="stats__num runs__time">{{ formatTime(run.started_at) }}</td>
+              <td class="stats__num runs__time">{{ formatTime(run.finished_at) }}</td>
               <td>{{ taskCounts(run.tasks) }}</td>
             </tr>
           </tbody>
