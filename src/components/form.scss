@@ -300,3 +300,26 @@ button {
 .verdict--failed {
   color: var(--danger);
 }
+
+// Runs: run and task statuses.
+.status {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.status--succeeded {
+  color: var(--success);
+}
+
+.status--failed {
+  color: var(--danger);
+}
+
+.status--running {
+  color: var(--accent);
+}
+
+.status--pending,
+.status--cancelled {
+  color: var(--muted);
+}

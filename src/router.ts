@@ -10,9 +10,14 @@ import InspectView from './views/InspectView.vue';
 import NormalizeView from './views/NormalizeView.vue';
 import ValidateView from './views/ValidateView.vue';
 import CommandPlaceholderView from './views/CommandPlaceholderView.vue';
+import RunsView from './views/RunsView.vue';
+import RunView from './views/RunView.vue';
 
 /** API commands with a page each, in menu order. Page paths never start with /api. */
 export const COMMANDS = ['stats', 'inspect', 'normalize', 'validate'] as const;
+
+/** Service pages (pipeline runs), in menu order. */
+export const SERVICES = ['runs'] as const;
 
 /** Commands that have a page; the rest show CommandPlaceholderView. */
 const PAGES: Partial<Record<(typeof COMMANDS)[number], Component>> = {
@@ -30,6 +35,14 @@ export const routes: RouteRecordRaw[] = [
       ? { path: `/${command}`, component: page }
       : { path: `/${command}`, component: CommandPlaceholderView, props: { command } };
   }),
+  // Nested, so the `runs` menu link stays active on a run's page.
+  {
+    path: '/runs',
+    children: [
+      { path: '', component: RunsView },
+      { path: ':runId', component: RunView, props: true },
+    ],
+  },
   { path: '/:pathMatch(.*)*', redirect: '/stats' },
 ];
 

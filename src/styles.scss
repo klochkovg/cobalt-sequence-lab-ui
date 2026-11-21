@@ -178,10 +178,14 @@ a:hover {
   padding-left: 40px;
 }
 
-/* ---------- Command menu (modes list) ---------- */
-.commands {
+/* ---------- Command menu (modes and service lists) ---------- */
+/* Both lists stick together under the top bar. */
+.sidebar__inner {
   position: sticky;
   top: var(--nav-height);
+}
+
+.commands {
   display: flex;
   flex-direction: column;
   padding: 28px 0;
@@ -189,6 +193,10 @@ a:hover {
   font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: lowercase;
+}
+
+.commands + .commands {
+  padding-top: 0;
 }
 
 .commands__label {
@@ -231,14 +239,21 @@ a:hover {
     padding-left: 0;
   }
 
-  .commands {
+  .sidebar__inner {
     position: static;
+  }
+
+  .commands {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 24px;
     margin-top: 28px;
     padding: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .commands + .commands {
+    margin-top: 0;
   }
 
   .commands__label {

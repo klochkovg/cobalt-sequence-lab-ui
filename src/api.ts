@@ -58,3 +58,19 @@ export async function postForm<T>(path: string, form: FormData): Promise<T> {
 export async function postFormText(path: string, form: FormData): Promise<string> {
   return (await post(path, form)).text();
 }
+
+/** GET an API endpoint (e.g. `/runs`) and return the JSON body (errors as in `post`). */
+export async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(`/api${path}`);
+  if (!response.ok) {
+    throw new Error(await errorMessage(response));
+  }
+  return (await response.json()) as T;
+}
+
+/** Show an ISO 8601 UTC time as `YYYY-MM-DD HH:MM:SS`; null becomes EMPTY. */
+export function formatTime(iso: string | null): string {
+  if (iso === null || iso === '') return EMPTY;
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/.exec(iso);
+  return match ? `${match[1]} ${match[2]}` : iso;
+}

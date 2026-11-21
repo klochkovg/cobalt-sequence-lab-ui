@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { COMMANDS } from './router';
+import { COMMANDS, SERVICES } from './router';
 </script>
 
 <template>
@@ -13,20 +13,33 @@ import { COMMANDS } from './router';
   </nav>
 
   <div class="layout container">
-    <!-- Left "frame": the list of modes, one per command page. -->
+    <!-- Left "frame": the modes (one page per command) and the service pages. -->
     <aside class="sidebar">
-      <nav class="commands" aria-label="Commands">
-        <p class="commands__label">// modes</p>
-        <!-- RouterLink adds aria-current="page" to the active link. -->
-        <RouterLink
-          v-for="cmd in COMMANDS"
-          :key="cmd"
-          :to="`/${cmd}`"
-          class="commands__link"
-          active-class="commands__link--active"
-          >{{ cmd }}</RouterLink
-        >
-      </nav>
+      <div class="sidebar__inner">
+        <nav class="commands" aria-label="Commands">
+          <p class="commands__label">// modes</p>
+          <!-- RouterLink adds aria-current="page" to the active link. -->
+          <RouterLink
+            v-for="cmd in COMMANDS"
+            :key="cmd"
+            :to="`/${cmd}`"
+            class="commands__link"
+            active-class="commands__link--active"
+            >{{ cmd }}</RouterLink
+          >
+        </nav>
+        <nav class="commands" aria-label="Service">
+          <p class="commands__label">// service</p>
+          <RouterLink
+            v-for="svc in SERVICES"
+            :key="svc"
+            :to="`/${svc}`"
+            class="commands__link"
+            active-class="commands__link--active"
+            >{{ svc }}</RouterLink
+          >
+        </nav>
+      </div>
     </aside>
 
     <main class="layout__content">
