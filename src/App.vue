@@ -1,5 +1,18 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { getJson, type Me } from './api';
 import { COMMANDS, SERVICES } from './router';
+
+/** Shown until `/api/me` answers, and kept if it fails. */
+const userName = ref('guest');
+
+onMounted(async () => {
+  try {
+    userName.value = (await getJson<Me>('/me')).name || userName.value;
+  } catch {
+    // No user endpoint or no connection: stay a guest.
+  }
+});
 </script>
 
 <template>
@@ -39,6 +52,14 @@ import { COMMANDS, SERVICES } from './router';
             >{{ svc }}</RouterLink
           >
         </nav>
+        <!-- Pinned to the bottom of the column. -->
+        <section class="user" aria-label="User">
+          <p class="commands__label">// user</p>
+          <span class="user__name">{{ userName }}</span>
+          <RouterLink to="/settings" class="commands__link" active-class="commands__link--active"
+            >settings</RouterLink
+          >
+        </section>
       </div>
     </aside>
 

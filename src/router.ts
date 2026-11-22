@@ -12,6 +12,7 @@ import ValidateView from './views/ValidateView.vue';
 import CommandPlaceholderView from './views/CommandPlaceholderView.vue';
 import RunsView from './views/RunsView.vue';
 import RunView from './views/RunView.vue';
+import SettingsView from './views/SettingsView.vue';
 
 /** API commands with a page each, in menu order. Page paths never start with /api. */
 export const COMMANDS = ['stats', 'inspect', 'normalize', 'validate'] as const;
@@ -43,6 +44,7 @@ export const routes: RouteRecordRaw[] = [
       { path: ':runId', component: RunView, props: true },
     ],
   },
+  { path: '/settings', component: SettingsView },
   { path: '/:pathMatch(.*)*', redirect: '/stats' },
 ];
 

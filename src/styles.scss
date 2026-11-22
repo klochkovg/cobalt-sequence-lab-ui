@@ -179,10 +179,13 @@ a:hover {
 }
 
 /* ---------- Command menu (modes and service lists) ---------- */
-/* Both lists stick together under the top bar. */
+/* Both lists stick together under the top bar; the user block sits at the bottom of the viewport. */
 .sidebar__inner {
   position: sticky;
   top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--nav-height));
 }
 
 .commands {
@@ -225,6 +228,27 @@ a:hover {
   border-right-color: var(--accent-bright);
 }
 
+/* ---------- User block (bottom of the menu) ---------- */
+.user {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.user__name {
+  padding: 6px 18px 6px 0;
+  color: var(--ink);
+  font-weight: 500;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+
 /* Narrow windows: a side column would squeeze the forms, so fall back to a row of tabs. */
 @media (max-width: 720px) {
   .layout {
@@ -241,6 +265,21 @@ a:hover {
 
   .sidebar__inner {
     position: static;
+    min-height: 0;
+  }
+
+  .user {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 24px;
+    margin-top: 0;
+    padding: 0;
+    border-top: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .user__name {
+    padding: 10px 0;
   }
 
   .commands {

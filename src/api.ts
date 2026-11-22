@@ -74,3 +74,6 @@ export function formatTime(iso: string | null): string {
   const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/.exec(iso);
   return match ? `${match[1]} ${match[2]}` : iso;
 }
+
+/** The current user, from `GET /api/me`. */
+export type Me = { name: string };

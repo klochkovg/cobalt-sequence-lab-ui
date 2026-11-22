@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { createMemoryHistory } from 'vue-router';
 import App from '../App.vue';
 import StatsForm from '../components/StatsForm.vue';
@@ -8,6 +8,7 @@ import NormalizeForm from '../components/NormalizeForm.vue';
 import ValidateForm from '../components/ValidateForm.vue';
 import RunsList from '../components/RunsList.vue';
 import RunDetail from '../components/RunDetail.vue';
+import SettingsView from '../views/SettingsView.vue';
 import { createAppRouter } from '../router';
 
 async function mountAt(path: string) {
@@ -119,5 +120,39 @@ describe('App routing', () => {
     expect(detail.props('runId')).toBe('20261119-201710-52dea242');
     expect(wrapper.find('nav[aria-label="Service"] .commands__link--active').text()).toBe('runs');
     expect(wrapper.find('nav[aria-label="Commands"] .commands__link--active').exists()).toBe(false);
+  });
+
+  it('shows the user name from /api/me at the bottom of the sidebar', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve({ name: 'Ada Lovelace' }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const { wrapper } = await mountAt('/stats');
+    await flushPromises();
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/me');
+    const user = wrapper.find('aside.sidebar section.user');
+    expect(user.find('.commands__label').text()).toBe('// user');
+    expect(user.find('.user__name').text()).toBe('Ada Lovelace');
+  });
+
+  it('falls back to guest when /api/me fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    const { wrapper } = await mountAt('/stats');
+    await flushPromises();
+
+    expect(wrapper.find('aside.sidebar .user__name').text()).toBe('guest');
+  });
+
+  it('links to the settings page and marks it active there', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})));
+    const { wrapper } = await mountAt('/settings');
+    const link = wrapper.find('aside.sidebar section.user a');
+
+    expect(link.text()).toBe('settings');
+    expect(link.attributes('href')).toBe('/settings');
+    expect(link.attributes('aria-current')).toBe('page');
+    expect(wrapper.find('main').findComponent(SettingsView).exists()).toBe(true);
+    expect(wrapper.find('nav.commands a[aria-current="page"]').exists()).toBe(false);
   });
 });

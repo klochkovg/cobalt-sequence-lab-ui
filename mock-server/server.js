@@ -406,6 +406,7 @@ const ROUTES = [
   ['POST', /^\/validate$/, handleValidate, { body: 'form' }],
   ['POST', /^\/stats$/, handleStats, { body: 'form' }],
   ['POST', /^\/normalize$/, handleNormalize, { body: 'form' }],
+  ['GET', /^\/me$/, async ({ ctx }) => json(200, { name: ctx.userName }), {}],
   ['GET', /^\/runs$/, handleRunsList, {}],
   ['GET', /^\/runs\/([^/]+)$/, handleRunsShow, {}],
   ['POST', /^\/run$/, handleRun, { body: 'json' }],
@@ -539,9 +540,10 @@ async function dispatch(req, ctx) {
 /**
  * Create the mock server (not yet listening).
  * @param {{ apiKeys?: string[], delayMs?: number, log?: boolean, maxUploadMb?: number,
- *           runs?: object[] }} [options]
+ *           runs?: object[], userName?: string }} [options]
  *   `maxUploadMb`: request body limit in MiB (default 100, 0 = no limit).
  *   `runs`: the stored pipeline runs to serve (default: the seed runs).
+ *   `userName`: the name `GET /me` returns for the caller (default `lab user`).
  */
 export function createServer({
   apiKeys = [],
@@ -549,12 +551,14 @@ export function createServer({
   log = false,
   maxUploadMb = 100,
   runs = SEED_RUNS,
+  userName = 'lab user',
 } = {}) {
   const ctx = {
     apiKeys,
     maxUploadMb,
     maxUploadBytes: maxUploadMb > 0 ? Math.floor(maxUploadMb * 1024 * 1024) : 0,
     runs: new Map(runs.map((run) => [run.run_id, run])),
+    userName,
   };
   return http.createServer(async (req, res) => {
     let response;
@@ -592,7 +596,8 @@ function main() {
   const maxUploadMb = Number(process.env.MOCK_MAX_UPLOAD_MB ?? 100);
   const storageDir = process.env.MOCK_STORAGE_DIR;
   const runs = storageDir ? loadRuns(storageDir) : SEED_RUNS;
-  const server = createServer({ apiKeys, delayMs, log: true, maxUploadMb, runs });
+  const userName = process.env.MOCK_USER_NAME || undefined;
+  const server = createServer({ apiKeys, delayMs, log: true, maxUploadMb, runs, userName });
   server.listen(port, host, () => {
     console.log(`Cobalt mock server ${VERSION} listening on http://${host}:${port}`);
     console.log(

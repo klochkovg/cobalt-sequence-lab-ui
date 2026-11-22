@@ -19,6 +19,7 @@ npm run mock:watch    # restart on changes to the mock itself
 | `MOCK_DELAY_MS`      | `0`         | Delay every response, e.g. to see loading states                                               |
 | `MOCK_MAX_UPLOAD_MB` | `100`       | Request body limit in MiB (`0`: no limit); gzip may expand to 10× it                           |
 | `MOCK_STORAGE_DIR`   | unset       | Serve the runs stored in `<dir>/runs/*/manifest.json` instead of the seed runs                 |
+| `MOCK_USER_NAME`     | `lab user`  | Name returned by `GET /api/me`                                                                 |
 
 CORS is always enabled for any origin, and the `/normalize` result headers are exposed to the browser.
 
@@ -32,6 +33,7 @@ CORS is always enabled for any origin, and the `/normalize` result headers are e
 | POST   | `/api/validate`            | QC report (duplicate IDs, empty/undefined sequences, invalid characters with `details`), `max_warnings`       |
 | POST   | `/api/stats`               | Rows from `file` uploads or a `sequence`, with `sort`/`desc`; field errors for neither/both                   |
 | POST   | `/api/normalize`           | Plain-text `fasta`, `fastq` or `genbank` with `Content-Disposition` and `X-Records-*` headers                 |
+| GET    | `/api/me`                  | `{ name }` of the current user (`MOCK_USER_NAME`)                                                             |
 | GET    | `/api/runs`                | Run summaries, newest first                                                                                   |
 | GET    | `/api/runs/{run_id}`       | One run with its tasks; `404 "run not found: <id>"`                                                           |
 | POST   | `/api/run`, `/api/foldrna` | Validate the JSON body (`422` field errors), then `501` stubs                                                 |

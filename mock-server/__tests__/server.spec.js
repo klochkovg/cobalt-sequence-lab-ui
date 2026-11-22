@@ -60,6 +60,12 @@ describe('mock server (no auth)', () => {
     expect(await res.json()).toEqual({ status: 'ok' });
   });
 
+  it('GET /me returns the default user name', async () => {
+    const res = await fetch(baseUrl + '/me');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ name: 'lab user' });
+  });
+
   it('answers CORS preflight requests', async () => {
     const res = await fetch(baseUrl + '/inspect', {
       method: 'OPTIONS',
@@ -715,6 +721,7 @@ describe('mock server (api-key auth)', () => {
       expect(await res.json()).toEqual({ detail: 'Invalid or missing API key' });
     }
     expect((await fetch(baseUrl + '/runs')).status).toBe(401);
+    expect((await fetch(baseUrl + '/me')).status).toBe(401);
   });
 
   it('accepts a valid key', async () => {
@@ -724,5 +731,20 @@ describe('mock server (api-key auth)', () => {
       headers: { 'X-API-Key': 'secret' },
     });
     expect(res.status).toBe(200);
+  });
+});
+
+describe('mock server (user name)', () => {
+  let server;
+  let baseUrl;
+
+  beforeAll(async () => {
+    ({ server, baseUrl } = await startServer({ userName: 'Ada Lovelace' }));
+  });
+  afterAll(() => new Promise((resolve) => server.close(resolve)));
+
+  it('GET /me returns the configured name', async () => {
+    const res = await fetch(baseUrl + '/me');
+    expect(await res.json()).toEqual({ name: 'Ada Lovelace' });
   });
 });
